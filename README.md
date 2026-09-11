@@ -197,7 +197,7 @@ omarchy-shell shell rescanPlugins
 
 ## Security
 
-This plugin runs as part of the unprivileged `omarchy-shell` process using Qt/QML. It does not run install hooks, execute shell commands on startup, or require elevated (`sudo`) privileges.
+This plugin runs as part of the unprivileged `omarchy-shell` process using Qt/QML. It does not run install hooks, execute shell commands on startup, or require elevated privileges.
 
 ---
 
