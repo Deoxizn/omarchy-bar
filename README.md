@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Pill Bar Showcase" src="assets/bar-preview.png" width="100%" />
+  <img alt="Pill Bar Showcase" src="preview.png" width="100%" />
 </p>
 
 # Pill Bar (`bit-dev.bar`)
