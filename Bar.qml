@@ -80,8 +80,8 @@ Item {
   property color background: Color.bar.background
   property color urgent: Color.bar.active
   property color accent: Color.accent
-  property real pillOpacity: (barConfig && typeof barConfig.pillOpacity === "number") ? barConfig.pillOpacity : 0.24
-  property real pillBorderOpacity: (barConfig && typeof barConfig.pillBorderOpacity === "number") ? barConfig.pillBorderOpacity : 0.35
+  property real pillOpacity: (barConfig && typeof barConfig.pillOpacity === "number") ? barConfig.pillOpacity : 0.35
+  property real pillBorderOpacity: (barConfig && typeof barConfig.pillBorderOpacity === "number") ? barConfig.pillBorderOpacity : 0.45
   property color pillColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, pillOpacity)
   property color pillBorderColor: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, pillBorderOpacity)
 
@@ -643,6 +643,19 @@ Item {
       var id = root.canonicalWidgetId(root.entryId(entries[i]))
       var isSystem = id === "bit-dev.system-pills"
       if (isSystem === includeSystem) filtered.push(entries[i])
+    }
+    return filtered
+  }
+
+  // On the workspaces-only monitor (HDMI), the left pill shows only the
+  // workspaces widget. Without this, every non-system left entry renders
+  // there, and media lives in left too, so it came along to HDMI.
+  function leftEntriesForWorkspacesOnly() {
+    var entries = layoutEntries("left")
+    var filtered = []
+    for (var i = 0; i < entries.length; i++) {
+      var id = root.canonicalWidgetId(root.entryId(entries[i]))
+      if (id === "im0001gt.screens.workspaces") filtered.push(entries[i])
     }
     return filtered
   }
@@ -1378,14 +1391,16 @@ Item {
       id: horizontalBar
 
       Item {
+        id: barContent
+        readonly property bool workspacesOnly: barWindow.screen ? barWindow.screen.name === "HDMI-A-1" : false
         anchors.fill: parent
 
-        CenterModules { anchors.fill: parent }
+        CenterModules { anchors.fill: parent; visible: !barContent.workspacesOnly }
 
         Item {
           id: leftSection
-          width: leftWorkspaceModules.width + leftSystemModules.width
-            + (leftWorkspaceModules.width > 0 && leftSystemModules.width > 0 ? Style.space(4) : 0)
+          width: leftWorkspaceModules.width + (barContent.workspacesOnly ? 0 : leftSystemModules.width)
+            + (leftWorkspaceModules.width > 0 && !barContent.workspacesOnly && leftSystemModules.width > 0 ? Style.space(4) : 0)
             + Style.space(12)
           height: parent.height - Style.space(5)
           anchors.left: parent.left
@@ -1406,7 +1421,7 @@ Item {
 
           ModuleList {
             id: leftWorkspaceModules
-            entries: root.leftEntriesForSystem(false)
+            entries: barContent.workspacesOnly ? root.leftEntriesForWorkspacesOnly() : root.leftEntriesForSystem(false)
             region: "left"
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -1419,6 +1434,7 @@ Item {
             region: "left"
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
+            visible: !barContent.workspacesOnly
           }
         }
 
@@ -1431,7 +1447,7 @@ Item {
           anchors.right: parent.right
           anchors.rightMargin: Style.space(8)
           anchors.verticalCenter: parent.verticalCenter
-          visible: true
+          visible: !barContent.workspacesOnly
 
           BorderSurface {
             visible: rightModules.width > 0
